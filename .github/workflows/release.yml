@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the package
+        run: bash build.sh
+
+      - name: Check the package
+        run: unzip -l StripScene.mzp
+
+      # Pull requests and manual runs keep the package for a week, to test before merging.
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'push'
+        with:
+          name: StripScene
+          path: StripScene.mzp
+          retention-days: 7
+
+      # A version in VERSION that has no release yet is released: its tag, its notes from
+      # RELEASE_NOTES.md and the package. Merging a version bump into main is the sign-off.
+      - name: Release a new version
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          TAG="v$VERSION"
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "$TAG is already released, nothing to do."
+            exit 0
+          fi
+          awk -v head="# Strip Scene $VERSION" '
+            $0 == head { found = 1; next }
+            found && /^# Strip Scene / { exit }
+            found && $0 != "---" { print }
+          ' RELEASE_NOTES.md > notes.md
+          if ! grep -q '[^[:space:]]' notes.md; then
+            echo "::error::RELEASE_NOTES.md has no '# Strip Scene $VERSION' section."
+            exit 1
+          fi
+          gh release create "$TAG" StripScene.mzp --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Strip Scene $VERSION" --notes-file notes.md

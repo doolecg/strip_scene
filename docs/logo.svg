@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Strip Scene">
+  <rect width="160" height="160" rx="36" fill="#151515"/>
+  <g fill="none" stroke-linejoin="round" stroke-linecap="round" stroke-width="7">
+    <path d="M80 34 L122 58 L122 106 L80 130 L38 106 L38 58 Z" stroke="#F6F5F1"/>
+    <path d="M38 58 L80 82 L122 58 M80 82 L80 130" stroke="#F6F5F1"/>
+  </g>
+  <path d="M80 82 L122 58 L122 106 L80 130 Z" fill="#FF5B23"/>
+</svg>
