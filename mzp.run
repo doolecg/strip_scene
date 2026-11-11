@@ -1,0 +1,5 @@
+name "Strip Scene"
+version 1
+
+run "install.ms"
+drop "install.ms"
